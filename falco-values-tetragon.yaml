@@ -9,7 +9,7 @@ falco:
   # Tetragon Collector (gRPC Client)
   grpc_output:
     enabled: true
-    address: "tetragon-agent.<your-node-ip>"
+    address: "localhost"
     port: 8090
     check_connection: true
     connect_timeout_seconds: 5

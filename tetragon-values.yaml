@@ -1,0 +1,8 @@
+# tetragon-values.yaml
+agent:
+  collector:
+    host: "0.0.0.0" # listen from everywhere
+    port: 8090
+  extraHostPathMounts:
+    - name: "tetragon-sock"
+      mountPath: "/var/run/cilium/tetragon"
