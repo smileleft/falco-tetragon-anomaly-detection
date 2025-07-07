@@ -1,0 +1,45 @@
+# falco-values-custom-rules.yaml
+falco:
+  outputs:
+    json_output: true
+    syscall_event_drops: true
+  grpc:
+    enabled: true
+    bind_address: "0.0.0.0:5060"
+
+  grpc_output:
+    enabled: true
+    address: "localhost"
+    port: 8090
+    check_connection: true
+    connect_timeout_seconds: 5
+    output_type: json
+    keepalive_timeout_seconds: 10
+
+  rules:
+    - rule: Unexpected Executable in Web Server
+      desc: Detects an executable being run from a common web server directory.
+      condition: >
+        evt.type=execve and fd.directory=/var/www/html and not proc.name in (apache, nginx)
+      output: >
+        Executable %proc.name (%proc.cmdline) run in web server directory %fd.directory (user=%user.name clientip=%client.ip).
+      priority: ERROR
+      tags: [filesystem, host, web, anomaly]
+
+    - rule: Suspicious Outbound Connection from Internal Service
+      desc: Detects outbound network connections from internal services to external IPs, which might indicate C2 activity.
+      condition: >
+        evt.type=connect and not proc.name in (kube-proxy, cilium-agent) and fd.sip.is_private=false and not fd.port=443
+      output: >
+        Suspicious outbound connection from %proc.name to %fd.saddr:%fd.sport (user=%user.name)
+      priority: WARNING
+      tags: [network, host, anomaly, C2]
+
+    - rule: Write to Sensitive Path by Non-Admin User
+      desc: Detects non-administrative users writing to sensitive system paths.
+      condition: >
+        evt.type=write and fd.name in (/etc/passwd, /etc/shadow, /bin/, /usr/bin/, /sbin/, /usr/sbin/) and user.uid > 0 and user.name not in (root, admin)
+      output: >
+        Non-admin user %user.name (%user.uid) wrote to sensitive path %fd.name (command=%proc.cmdline)
+      priority: CRITICAL
+      tags: [filesystem, privilege, host]
