@@ -1,0 +1,17 @@
+falco:
+  outputs:
+    json_output: true
+    syscall_event_drops: true
+  grpc:
+    enabled: true
+    bind_address: "0.0.0.0:5060"
+
+  # Tetragon Collector (gRPC Client)
+  grpc_output:
+    enabled: true
+    address: "tetragon-agent.<your-node-ip>"
+    port: 8090
+    check_connection: true
+    connect_timeout_seconds: 5
+    output_type: json
+    keepalive_timeout_seconds: 10
